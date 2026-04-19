@@ -280,8 +280,7 @@ server: {
 - **HTTP客户端**: Axios
 - **构建工具**: Vite
 
-***邮箱号***：13238740650@163.com
- - **电话微信同上** 
+***邮箱号***：13238740650@163.com 
  -   1. 补齐订单模块后端（缺失最严重）
         - 创建Order实体类、DTO、VO
         - 实现OrderService和OrderServiceImpl
