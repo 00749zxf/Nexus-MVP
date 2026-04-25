@@ -1,0 +1,218 @@
+/* 电商系统全局样式 */
+:root {
+  /* 主色调 */
+  --primary-color: #409eff;
+  --success-color: #67c23a;
+  --warning-color: #e6a23c;
+  --danger-color: #f56c6c;
+  --info-color: #909399;
+
+  /* 背景色 */
+  --bg-color: #f5f7fa;
+  --card-bg-color: #ffffff;
+  --sidebar-bg-color: #304156;
+  --header-bg-color: #ffffff;
+
+  /* 文字色 */
+  --text-primary: #303133;
+  --text-regular: #606266;
+  --text-secondary: #909399;
+  --text-placeholder: #c0c4cc;
+
+  /* 边框色 */
+  --border-color: #dcdfe6;
+  --border-color-light: #e4e7ed;
+  --border-color-lighter: #ebeef5;
+
+  /* 阴影 */
+  --box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  --box-shadow-light: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
+
+  /* 圆角 */
+  --border-radius: 4px;
+  --border-radius-round: 20px;
+
+  /* 间距 */
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* 字体大小 */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+
+  /* 过渡效果 */
+  --transition-all: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+/* 暗色模式 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #1a1a1a;
+    --card-bg-color: #2d2d2d;
+    --sidebar-bg-color: #1f2d3d;
+    --header-bg-color: #2d2d2d;
+
+    --text-primary: #e5e5e5;
+    --text-regular: #cccccc;
+    --text-secondary: #999999;
+    --text-placeholder: #666666;
+
+    --border-color: #444444;
+    --border-color-light: #555555;
+    --border-color-lighter: #666666;
+  }
+}
+
+/* 基础重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+  font-size: var(--font-size-md);
+  color: var(--text-primary);
+  background-color: var(--bg-color);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 布局工具类 */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-md);
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+/* 间距工具类 */
+.mt-1 { margin-top: var(--space-xs); }
+.mt-2 { margin-top: var(--space-sm); }
+.mt-3 { margin-top: var(--space-md); }
+.mt-4 { margin-top: var(--space-lg); }
+.mt-5 { margin-top: var(--space-xl); }
+
+.mb-1 { margin-bottom: var(--space-xs); }
+.mb-2 { margin-bottom: var(--space-sm); }
+.mb-3 { margin-bottom: var(--space-md); }
+.mb-4 { margin-bottom: var(--space-lg); }
+.mb-5 { margin-bottom: var(--space-xl); }
+
+.p-1 { padding: var(--space-xs); }
+.p-2 { padding: var(--space-sm); }
+.p-3 { padding: var(--space-md); }
+.p-4 { padding: var(--space-lg); }
+.p-5 { padding: var(--space-xl); }
+
+/* 卡片样式 */
+.card {
+  background-color: var(--card-bg-color);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--box-shadow-light);
+  transition: var(--transition-all);
+}
+
+.card:hover {
+  box-shadow: var(--box-shadow);
+}
+
+/* 按钮扩展 */
+.el-button {
+  border-radius: var(--border-radius);
+}
+
+/* 表单样式 */
+.el-form-item__label {
+  color: var(--text-regular);
+}
+
+/* 表格样式 */
+.el-table {
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+/* 导航激活状态 */
+.router-link-active {
+  color: var(--primary-color) !important;
+}
+
+.router-link-exact-active {
+  font-weight: 600;
+}
+
+/* 响应式工具 */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 var(--space-sm);
+  }
+
+  .hidden-sm {
+    display: none !important;
+  }
+}
+
+@media (max-width: 992px) {
+  .hidden-md {
+    display: none !important;
+  }
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--border-color-lighter);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-placeholder);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
