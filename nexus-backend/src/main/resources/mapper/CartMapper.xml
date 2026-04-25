@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nexus.mapper.CartMapper">
+
+    <resultMap id="BaseResultMap" type="com.nexus.model.entity.Cart">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="member_id" property="memberId" jdbcType="BIGINT"/>
+        <result column="product_id" property="productId" jdbcType="BIGINT"/>
+        <result column="quantity" property="quantity" jdbcType="INTEGER"/>
+        <result column="selected" property="selected" jdbcType="BOOLEAN"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, member_id, product_id, quantity, selected, create_time, update_time
+    </sql>
+
+    <insert id="insert" parameterType="com.nexus.model.entity.Cart" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO oms_cart (member_id, product_id, quantity, selected)
+        VALUES (#{memberId}, #{productId}, #{quantity}, #{selected})
+    </insert>
+
+    <update id="updateById" parameterType="com.nexus.model.entity.Cart">
+        UPDATE oms_cart
+        <set>
+            <if test="quantity != null">quantity = #{quantity},</if>
+            <if test="selected != null">selected = #{selected},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM oms_cart WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByMemberIdAndProductId">
+        DELETE FROM oms_cart
+        WHERE member_id = #{memberId} AND product_id = #{productId}
+    </delete>
+
+    <delete id="deleteByMemberId" parameterType="java.lang.Long">
+        DELETE FROM oms_cart WHERE member_id = #{memberId}
+    </delete>
+
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM oms_cart
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByMemberIdAndProductId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM oms_cart
+        WHERE member_id = #{memberId} AND product_id = #{productId}
+    </select>
+
+    <select id="selectByMemberId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM oms_cart
+        WHERE member_id = #{memberId}
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="countByMemberId" parameterType="java.lang.Long" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM oms_cart WHERE member_id = #{memberId}
+    </select>
+
+</mapper>

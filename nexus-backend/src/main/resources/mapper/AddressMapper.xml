@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nexus.mapper.AddressMapper">
+
+    <resultMap id="BaseResultMap" type="com.nexus.model.entity.Address">
+        <id column="id" property="id"/>
+        <result column="member_id" property="memberId"/>
+        <result column="receiver_name" property="receiverName"/>
+        <result column="receiver_phone" property="receiverPhone"/>
+        <result column="province" property="province"/>
+        <result column="city" property="city"/>
+        <result column="district" property="district"/>
+        <result column="detail_address" property="detailAddress"/>
+        <result column="is_default" property="isDefault"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, member_id, receiver_name, receiver_phone, province, city, district,
+        detail_address, is_default, create_time, update_time
+    </sql>
+
+    <!-- 插入地址 -->
+    <insert id="insert" parameterType="com.nexus.model.entity.Address" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ums_address (member_id, receiver_name, receiver_phone, province, city, district, detail_address, is_default)
+        VALUES (#{memberId}, #{receiverName}, #{receiverPhone}, #{province}, #{city}, #{district}, #{detailAddress}, #{isDefault})
+    </insert>
+
+    <!-- 根据ID更新地址 -->
+    <update id="updateById" parameterType="com.nexus.model.entity.Address">
+        UPDATE ums_address
+        SET receiver_name = #{receiverName},
+            receiver_phone = #{receiverPhone},
+            province = #{province},
+            city = #{city},
+            district = #{district},
+            detail_address = #{detailAddress},
+            is_default = #{isDefault}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据ID删除地址 -->
+    <delete id="deleteById">
+        DELETE FROM ums_address WHERE id = #{id}
+    </delete>
+
+    <!-- 根据ID查询地址 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM ums_address
+        WHERE id = #{id}
+    </select>
+
+    <!-- 根据会员ID查询所有地址 -->
+    <select id="selectByMemberId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM ums_address
+        WHERE member_id = #{memberId}
+        ORDER BY is_default DESC, create_time DESC
+    </select>
+
+    <!-- 根据会员ID查询默认地址 -->
+    <select id="selectDefaultByMemberId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM ums_address
+        WHERE member_id = #{memberId} AND is_default = 1
+        LIMIT 1
+    </select>
+
+    <!-- 清除会员的所有默认地址 -->
+    <update id="clearDefaultByMemberId">
+        UPDATE ums_address SET is_default = 0 WHERE member_id = #{memberId}
+    </update>
+
+    <!-- 设置指定地址为默认 -->
+    <update id="setDefaultById">
+        UPDATE ums_address SET is_default = 1 WHERE id = #{id}
+    </update>
+
+    <!-- 统计会员地址数量 -->
+    <select id="countByMemberId" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM ums_address WHERE member_id = #{memberId}
+    </select>
+
+</mapper>

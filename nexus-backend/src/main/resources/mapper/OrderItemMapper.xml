@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nexus.mapper.OrderItemMapper">
+
+    <resultMap id="BaseResultMap" type="com.nexus.model.entity.OrderItem">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="order_id" property="orderId" jdbcType="BIGINT"/>
+        <result column="product_id" property="productId" jdbcType="BIGINT"/>
+        <result column="product_name" property="productName" jdbcType="VARCHAR"/>
+        <result column="product_price" property="productPrice" jdbcType="DECIMAL"/>
+        <result column="quantity" property="quantity" jdbcType="INTEGER"/>
+        <result column="total_price" property="totalPrice" jdbcType="DECIMAL"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, order_id, product_id, product_name, product_price, quantity, total_price, create_time
+    </sql>
+
+    <insert id="insert" parameterType="com.nexus.model.entity.OrderItem" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO oms_order_item (order_id, product_id, product_name, product_price, quantity, total_price)
+        VALUES (#{orderId}, #{productId}, #{productName}, #{productPrice}, #{quantity}, #{totalPrice})
+    </insert>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO oms_order_item (order_id, product_id, product_name, product_price, quantity, total_price)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.orderId}, #{item.productId}, #{item.productName}, #{item.productPrice}, #{item.quantity}, #{item.totalPrice})
+        </foreach>
+    </insert>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM oms_order_item WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByOrderId" parameterType="java.lang.Long">
+        DELETE FROM oms_order_item WHERE order_id = #{orderId}
+    </delete>
+
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM oms_order_item
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByOrderId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM oms_order_item
+        WHERE order_id = #{orderId}
+        ORDER BY create_time
+    </select>
+
+</mapper>
