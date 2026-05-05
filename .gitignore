@@ -45,6 +45,7 @@ Thumbs.db
 .env.local
 *.env
 application-local.yml
+application.yml
 secrets/
 credentials.json
 

@@ -13,11 +13,16 @@ export const useCartStore = defineStore('cart', () => {
       const response = await cartApi.getCart()
       items.value = response.map(item => ({
         ...item,
+        price: Number(item.productPrice) || Number(item.price) || 0,
+        name: item.productName || item.name,
+        image: item.productImage || item.image,
         available: item.stock > 0,
         selected: item.selected || false,
         promotions: item.promotions || [],
         stock: Math.max(item.stock || 1, 1)
       }))
+      // 初始化每个商品的subtotal
+      items.value.forEach(item => updateItemSubtotal(item))
     } catch (error) {
       console.error('加载购物车失败:', error)
       // API失败时返回空数组，不使用模拟数据
@@ -172,9 +177,12 @@ export const useCartStore = defineStore('cart', () => {
 
   // 计算商品小计
   const updateItemSubtotal = (item) => {
-    item.subtotal = item.price * item.quantity
-    item.saveAmount = item.originalPrice
-      ? (item.originalPrice - item.price) * item.quantity
+    const price = Number(item.price) || 0
+    const quantity = Number(item.quantity) || 0
+    const originalPrice = Number(item.originalPrice) || 0
+    item.subtotal = price * quantity
+    item.saveAmount = originalPrice > price
+      ? (originalPrice - price) * quantity
       : 0
   }
 
@@ -191,15 +199,20 @@ export const useCartStore = defineStore('cart', () => {
   // 计算总金额
   const totalAmount = computed(() => {
     return selectedItems.value.reduce((total, item) => {
-      return total + (item.price * item.quantity)
+      const price = Number(item.price) || 0
+      const quantity = Number(item.quantity) || 0
+      return total + (price * quantity)
     }, 0)
   })
 
   // 计算节省金额
   const discountAmount = computed(() => {
     return selectedItems.value.reduce((total, item) => {
-      const itemDiscount = item.originalPrice
-        ? (item.originalPrice - item.price) * item.quantity
+      const price = Number(item.price) || 0
+      const originalPrice = Number(item.originalPrice) || 0
+      const quantity = Number(item.quantity) || 0
+      const itemDiscount = originalPrice > price
+        ? (originalPrice - price) * quantity
         : 0
       return total + itemDiscount
     }, 0)

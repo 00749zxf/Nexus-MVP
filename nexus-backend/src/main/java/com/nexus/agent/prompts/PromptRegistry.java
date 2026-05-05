@@ -97,7 +97,7 @@ public class PromptRegistry {
 ### 系统架构
 - 后端: Spring Boot 3.2.4 + Java 21
 - 前端: Vue 3 + Vite + Element Plus
-- LLM: DeepSeek API (deepseek-chat模型)
+- LLM: MiMo API (mimo-v2-pro模型)
 - 数据库: MySQL (业务数据)
 - 缓存: Redis (对话记忆持久化)
 
@@ -135,9 +135,9 @@ public class PromptRegistry {
 - 右下角悬浮客服按钮
 - 前端路由: /customer-service
 
-### DeepSeek配置
-- API地址: https://api.deepseek.com
-- 模型: deepseek-chat
+### MiMo配置
+- API地址: https://token-plan-cn.xiaomimimo.com/v1
+- 模型: mimo-v2-pro
 - Temperature: 0.7
 - Max Tokens: 2048
 

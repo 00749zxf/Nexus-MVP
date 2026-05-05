@@ -7,7 +7,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:nexus_demo}?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
     username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:}
+    password: ${DB_PASSWORD:your_password_here}
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5
@@ -59,7 +59,7 @@ springdoc:
 # 自定义配置
 nexus:
   jwt:
-    secret: ${JWT_SECRET:}
+    secret: ${JWT_SECRET:your_base64_encoded_secret_here}
     expiration: 86400000
     token-header: Authorization
     token-prefix: "Bearer "
@@ -70,8 +70,8 @@ nexus:
     max-tool-calls: 5
     llm:
       deepseek:
-        api-key: ${DEEPSEEK_API_KEY:}
-        base-url: https://api.deepseek.com
-        model: deepseek-chat
+        api-key: ${DEEPSEEK_API_KEY:your_api_key_here}
+        base-url: ${LLM_BASE_URL:https://api.deepseek.com}
+        model: ${LLM_MODEL:deepseek-chat}
         temperature: 0.7
         max-tokens: 2048
