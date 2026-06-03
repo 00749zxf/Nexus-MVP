@@ -2,6 +2,7 @@ package com.nexus.common;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
@@ -49,6 +50,15 @@ public class GlobalExceptionHandler {
 
         log.error("参数校验异常: {}", message);
         return Result.error(ApiResult.BAD_REQUEST.getCode(), message);
+    }
+
+    /**
+     * JSON请求体解析异常处理
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public Result<Void> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+        log.error("请求体解析异常: {}", e.getMessage());
+        return Result.error(ApiResult.BAD_REQUEST.getCode(), "请求体 JSON 格式错误，请检查字符串中的换行、引号是否已正确转义");
     }
 
     /**

@@ -1,6 +1,8 @@
 package com.nexus.agent.controller;
 
 import com.nexus.agent.core.*;
+import com.nexus.common.ApiResult;
+import com.nexus.common.BusinessException;
 import com.nexus.agent.tools.ToolRegistry;
 import com.nexus.common.Result;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,6 +31,16 @@ public class AgentController {
     @PostMapping("/chat")
     @Operation(summary = "Agent对话", description = "与智能Agent进行对话")
     public Result<AgentResponse> chat(@RequestBody AgentRequest request) {
+        if (request == null) {
+            throw new BusinessException(ApiResult.BAD_REQUEST);
+        }
+        if (request.getMessage() == null || request.getMessage().trim().isEmpty()) {
+            throw new BusinessException(ApiResult.BAD_REQUEST.getCode(), "message 不能为空");
+        }
+        if (request.getAgentType() == null) {
+            request.setAgentType(AgentRequest.AgentType.CUSTOMER_SERVICE);
+        }
+
         AgentContext context = request.getContext();
         if (context == null) {
             context = new AgentContext();

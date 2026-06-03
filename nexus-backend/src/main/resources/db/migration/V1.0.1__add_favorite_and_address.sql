@@ -1,5 +1,5 @@
 -- =============================================
--- NexusDemo Database Migration Script
+-- Nexus E-Commerce Database Migration Script
 -- Version: 1.0.1
 -- Description: Add favorites and address tables, add avatar to member
 -- =============================================

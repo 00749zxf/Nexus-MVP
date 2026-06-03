@@ -1,4 +1,4 @@
--- Nexus电商系统Demo数据库脚本
+-- Nexus电商系统数据库脚本
 
 -- 创建数据库
 CREATE DATABASE IF NOT EXISTS nexus_demo DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

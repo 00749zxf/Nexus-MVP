@@ -27,6 +27,12 @@ spring:
           max-idle: 8
           min-idle: 0
 
+  # pgvector 向量知识库。仅在 nexus.agent.rag-enabled=true 时需要启动 PostgreSQL + pgvector。
+  vector-datasource:
+    url: jdbc:postgresql://${PGVECTOR_HOST:localhost}:${PGVECTOR_PORT:5432}/${PGVECTOR_DB:nexus_agent}
+    username: ${PGVECTOR_USERNAME:postgres}
+    password: ${PGVECTOR_PASSWORD:123456}
+
 # MyBatis配置
 mybatis:
   mapper-locations: classpath:mapper/*.xml
@@ -67,6 +73,7 @@ nexus:
   # Agent配置
   agent:
     use-llm: ${USE_LLM:true}
+    rag-enabled: ${RAG_ENABLED:false}
     max-tool-calls: 5
     llm:
       deepseek:

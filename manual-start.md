@@ -1,4 +1,4 @@
-# Nexus电商系统Demo - 手动启动指南
+# Nexus电商系统 - 手动启动指南
 
 如果脚本无法运行，请按照以下步骤手动启动服务。
 
@@ -37,7 +37,7 @@ redis-server
 1. **打开命令行**：
    ```bash
    # 进入后端目录
-   cd "E:\project\demo1\NexusDemo\nexus-backend"
+   cd "E:\project\exp\Nexus-MVP\nexus-backend"
    ```
 
 2. **编译项目** (首次运行或代码修改后)：
@@ -58,7 +58,7 @@ redis-server
 1. **打开新的命令行窗口**：
    ```bash
    # 进入前端目录
-   cd "E:\project\demo1\NexusDemo\nexus-frontend"
+   cd "E:\project\exp\Nexus-MVP\nexus-frontend"
    ```
 
 2. **安装依赖** (首次运行)：

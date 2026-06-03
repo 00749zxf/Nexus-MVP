@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 echo ========================================
-echo    Nexus Demo - Start Script
+echo    Nexus E-Commerce - Start Script
 echo ========================================
 echo.
 

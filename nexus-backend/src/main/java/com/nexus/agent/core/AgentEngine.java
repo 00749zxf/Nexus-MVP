@@ -19,7 +19,7 @@ import java.util.*;
 public class AgentEngine {
 
     private final ToolRegistry toolRegistry;
-    private final DeepSeekAgentExecutor deepSeekExecutor;
+    private final SpringAIAgentExecutor springAIExecutor;
     private final MockAgentExecutor mockExecutor;
 
     @Value("${nexus.agent.use-llm:false}")
@@ -30,8 +30,8 @@ public class AgentEngine {
      */
     public AgentResponse execute(AgentRequest request) {
         if (useLLM) {
-            log.info("使用DeepSeek执行Agent请求");
-            return deepSeekExecutor.executeWithLLM(request);
+            log.info("使用 SpringAI 执行 Agent 请求");
+            return springAIExecutor.executeWithLLM(request);
         } else {
             log.info("使用Mock执行Agent请求（测试模式）");
             return executeWithMock(request);

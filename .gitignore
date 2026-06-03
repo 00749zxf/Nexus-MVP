@@ -54,6 +54,11 @@ credentials.json
 *.temp
 *.swp
 *~
+req*.json
+resp*.json
+reply*.txt
+test-*.ps1
+*.http
 
 # Eclipse
 .apt_generated
