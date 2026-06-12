@@ -10,7 +10,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 自定义用户详情服务
@@ -32,13 +33,16 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("用户已被禁用: " + username);
         }
 
-        // 暂时使用简单的权限，后续可以根据需要扩展
-        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_USER");
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        if ("admin".equals(member.getUsername())) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        }
 
         return new User(
                 member.getUsername(),
                 member.getPassword(),
-                Collections.singletonList(authority)
+                authorities
         );
     }
 }

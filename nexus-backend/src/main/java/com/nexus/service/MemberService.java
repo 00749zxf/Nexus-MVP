@@ -2,6 +2,7 @@ package com.nexus.service;
 
 import com.nexus.model.entity.Member;
 import com.nexus.model.dto.MemberDTO;
+import com.nexus.model.dto.MemberUpdateDTO;
 import com.nexus.model.vo.MemberVO;
 
 import java.util.List;
@@ -31,15 +32,21 @@ public interface MemberService {
      */
     MemberVO getMemberById(Long id);
 
+    MemberVO getMemberByIdForCurrentUser(Long id);
+
     /**
      * 更新用户信息
      */
     MemberVO updateMember(Long id, MemberDTO memberDTO);
 
+    MemberVO updateCurrentMember(Long id, MemberUpdateDTO memberDTO);
+
     /**
      * 删除用户
      */
     void deleteMember(Long id);
+
+    void deleteCurrentMember(Long id);
 
     /**
      * 获取所有用户列表

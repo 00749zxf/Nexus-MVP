@@ -43,6 +43,16 @@ public class AgentResponse implements Serializable {
     private Long responseTime;
 
     /**
+     * 是否由保护/降级路径生成
+     */
+    private boolean degraded;
+
+    /**
+     * 降级原因，便于日志、监控和熔断统计
+     */
+    private String degradeReason;
+
+    /**
      * 建议操作
      */
     @Data

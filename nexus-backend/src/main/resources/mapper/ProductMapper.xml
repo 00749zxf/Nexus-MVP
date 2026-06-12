@@ -37,6 +37,20 @@
         WHERE id = #{id}
     </update>
 
+    <update id="decreaseStock">
+        UPDATE pms_product
+        SET stock = stock - #{quantity}, update_time = NOW()
+        WHERE id = #{id}
+          AND stock &gt;= #{quantity}
+          AND status = 1
+    </update>
+
+    <update id="increaseStock">
+        UPDATE pms_product
+        SET stock = stock + #{quantity}, update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
     <delete id="deleteById" parameterType="java.lang.Long">
         DELETE FROM pms_product WHERE id = #{id}
     </delete>

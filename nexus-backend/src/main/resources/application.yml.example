@@ -75,6 +75,16 @@ nexus:
     use-llm: ${USE_LLM:true}
     rag-enabled: ${RAG_ENABLED:false}
     max-tool-calls: 5
+    protection:
+      enabled: ${AGENT_PROTECTION_ENABLED:true}
+      max-concurrent-requests: ${AGENT_MAX_CONCURRENT_REQUESTS:20}
+      max-wait-ms: ${AGENT_MAX_WAIT_MS:200}
+      request-timeout-ms: ${AGENT_REQUEST_TIMEOUT_MS:30000}
+      per-user-min-interval-ms: ${AGENT_PER_USER_MIN_INTERVAL_MS:800}
+      circuit-failure-threshold: ${AGENT_CIRCUIT_FAILURE_THRESHOLD:5}
+      circuit-open-ms: ${AGENT_CIRCUIT_OPEN_MS:30000}
+      max-throttle-keys: ${AGENT_MAX_THROTTLE_KEYS:10000}
+      throttle-key-ttl-ms: ${AGENT_THROTTLE_KEY_TTL_MS:60000}
     llm:
       deepseek:
         api-key: ${DEEPSEEK_API_KEY:your_api_key_here}

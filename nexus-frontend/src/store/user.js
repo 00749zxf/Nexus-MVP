@@ -18,18 +18,11 @@ export const useUserStore = defineStore('user', () => {
     try {
       const { username, password } = credentials
 
-      // 后端登录接口使用query参数格式
-      const tokenValue = await api.post('/members/login', null, {
-        params: { username, password }
-      })
-
-      console.log('登录成功，获取到token:', tokenValue)
+      const tokenValue = await api.post('/members/login', { username, password })
 
       // 拦截器已返回 result.data，所以 tokenValue 就是 JWT token
       token.value = tokenValue
       localStorage.setItem('token', tokenValue)
-
-      console.log('token已保存到localStorage:', localStorage.getItem('token'))
 
       // 获取用户信息
       await loadUser()
@@ -56,8 +49,9 @@ export const useUserStore = defineStore('user', () => {
 
       // 注册成功后自动登录
       try {
-        const tokenValue = await api.post('/members/login', null, {
-          params: { username: userData.username, password: userData.password }
+        const tokenValue = await api.post('/members/login', {
+          username: userData.username,
+          password: userData.password
         })
 
         token.value = tokenValue
@@ -90,7 +84,6 @@ export const useUserStore = defineStore('user', () => {
   // 加载用户信息
   const loadUser = async () => {
     const savedToken = localStorage.getItem('token')
-    console.log('loadUser - 从localStorage获取token:', savedToken ? '存在' : '不存在')
 
     if (!savedToken) {
       token.value = ''
@@ -98,17 +91,14 @@ export const useUserStore = defineStore('user', () => {
     }
 
     token.value = savedToken
-    console.log('loadUser - 准备请求 /members/me')
 
     try {
       const userData = await api.get('/members/me')
-      console.log('loadUser - 获取用户信息成功:', userData)
       user.value = userData
       localStorage.setItem('user', JSON.stringify(userData))
     } catch (error) {
       console.error('获取用户信息失败:', error)
       if (error.response?.status === 401) {
-        console.log('token无效，清除登录状态')
         logout()
       }
     }

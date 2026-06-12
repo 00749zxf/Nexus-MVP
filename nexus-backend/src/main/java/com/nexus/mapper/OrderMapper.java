@@ -22,6 +22,11 @@ public interface OrderMapper {
      */
     int updateById(Order order);
 
+    int updateStatusIfCurrent(@Param("id") Long id,
+                              @Param("memberId") Long memberId,
+                              @Param("currentStatus") Integer currentStatus,
+                              @Param("newStatus") Integer newStatus);
+
     /**
      * 根据ID删除订单
      */

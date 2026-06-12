@@ -28,6 +28,8 @@ import java.util.*;
 @RequiredArgsConstructor
 public class SpringAIAgentExecutor implements AgentExecutor {
 
+    private static final int MAX_SESSION_CLIENTS = 1000;
+
     private final ChatClient.Builder chatClientBuilder;
     private final ObjectProvider<VectorStore> vectorStoreProvider;
     private final NexusSpringAITools nexusTools;
@@ -57,8 +59,9 @@ public class SpringAIAgentExecutor implements AgentExecutor {
             // 1. 从向量库检索相关知识
             String knowledge = searchKnowledge(request.getMessage());
 
-            // 2. 构建 System Prompt（含知识库内容）
-            String systemPrompt = buildSystemPrompt(request, knowledge);
+            // 2. 构建 System Prompt（含知识库内容和持久化历史）
+            String history = buildConversationHistory(sid);
+            String systemPrompt = buildSystemPrompt(request, knowledge, history);
 
             // 3. 获取或创建该 session 的 ChatClient（含持久化记忆）
             ChatClient chatClient = getOrCreateClient(sid);
@@ -97,6 +100,8 @@ public class SpringAIAgentExecutor implements AgentExecutor {
             errorResponse.setSessionId(sessionId);
             errorResponse.setResponse("抱歉，处理您的请求时出现错误，请稍后再试或联系人工客服。");
             errorResponse.setNeedHumanSupport(true);
+            errorResponse.setDegraded(true);
+            errorResponse.setDegradeReason("LLM_EXECUTION_ERROR");
             errorResponse.setResponseTime(System.currentTimeMillis() - startTime);
             return errorResponse;
         }
@@ -135,7 +140,7 @@ public class SpringAIAgentExecutor implements AgentExecutor {
         }
     }
 
-    private String buildSystemPrompt(AgentRequest request, String knowledge) {
+    private String buildSystemPrompt(AgentRequest request, String knowledge, String history) {
         Map<String, String> contextVars = new HashMap<>();
         contextVars.put("currentTime", new Date().toString());
         AgentRequest.AgentType agentType = request.getAgentType() != null
@@ -168,10 +173,20 @@ public class SpringAIAgentExecutor implements AgentExecutor {
                     + "如果问题涉及具体的产品规格、政策细节等专业内容，请回复\"抱歉，我暂时没有这方面的资料\"，不要猜测。";
         }
 
+        if (!history.isEmpty()) {
+            basePrompt += "\n\n## 最近对话历史\n"
+                    + "以下历史来自持久化会话存储，用于在服务重启后恢复上下文。回答时参考这些信息，但以用户最新问题为准。\n"
+                    + history;
+        }
+
         return basePrompt;
     }
 
     private ChatClient getOrCreateClient(String sessionId) {
+        if (!sessionClients.containsKey(sessionId) && sessionClients.size() >= MAX_SESSION_CLIENTS) {
+            sessionClients.clear();
+            log.warn("SpringAI session client cache reached {}, cleared to avoid unbounded memory growth", MAX_SESSION_CLIENTS);
+        }
         return sessionClients.computeIfAbsent(sessionId, id -> {
             ChatMemory memory = MessageWindowChatMemory.builder()
                     .chatMemoryRepository(new InMemoryChatMemoryRepository())
@@ -181,6 +196,26 @@ public class SpringAIAgentExecutor implements AgentExecutor {
                     .defaultAdvisors(MessageChatMemoryAdvisor.builder(memory).build())
                     .build();
         });
+    }
+
+    private String buildConversationHistory(String sessionId) {
+        List<ConversationMessage> messages = sessionStore.getRecentMessages(sessionId, 12);
+        if (messages.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder history = new StringBuilder();
+        for (ConversationMessage message : messages) {
+            if (message.getContent() == null || message.getContent().isBlank()) {
+                continue;
+            }
+            String role = "AGENT".equalsIgnoreCase(message.getRole()) ? "assistant" : "user";
+            history.append(role)
+                    .append(": ")
+                    .append(message.getContent())
+                    .append("\n");
+        }
+        return history.toString().trim();
     }
 
     private List<AgentResponse.Suggestion> generateSuggestions() {

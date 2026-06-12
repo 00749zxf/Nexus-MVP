@@ -92,12 +92,11 @@ public class AddressServiceImpl implements AddressService {
             address.setIsDefault(true);
         }
 
-        // 如果设置为默认，先清除其他默认
-        if (Boolean.TRUE.equals(address.getIsDefault())) {
-            addressMapper.clearDefaultByMemberId(memberId);
-        }
-
         addressMapper.insert(address);
+        if (Boolean.TRUE.equals(address.getIsDefault())) {
+            // Insert first, then flip all rows in one statement to avoid a transient no-default window.
+            addressMapper.setOnlyDefaultByMemberId(memberId, address.getId());
+        }
         log.info("添加地址: memberId={}, addressId={}", memberId, address.getId());
 
         return address.getId();
@@ -124,11 +123,13 @@ public class AddressServiceImpl implements AddressService {
 
         // 如果设置为默认，先清除其他默认
         if (Boolean.TRUE.equals(addressDTO.getIsDefault())) {
-            addressMapper.clearDefaultByMemberId(memberId);
             address.setIsDefault(true);
         }
 
         addressMapper.updateById(address);
+        if (Boolean.TRUE.equals(addressDTO.getIsDefault())) {
+            addressMapper.setOnlyDefaultByMemberId(memberId, id);
+        }
         log.info("更新地址: addressId={}", id);
     }
 
@@ -154,7 +155,7 @@ public class AddressServiceImpl implements AddressService {
         if (Boolean.TRUE.equals(address.getIsDefault())) {
             List<Address> remaining = addressMapper.selectByMemberId(memberId);
             if (!remaining.isEmpty()) {
-                addressMapper.setDefaultById(remaining.get(0).getId());
+                addressMapper.setOnlyDefaultByMemberId(memberId, remaining.get(0).getId());
             }
         }
     }
@@ -174,9 +175,8 @@ public class AddressServiceImpl implements AddressService {
             throw new BusinessException("无权操作此地址");
         }
 
-        // 清除其他默认，设置新默认
-        addressMapper.clearDefaultByMemberId(memberId);
-        addressMapper.setDefaultById(id);
+        // Flip defaults in one statement to avoid transient multiple/no-default states.
+        addressMapper.setOnlyDefaultByMemberId(memberId, id);
 
         log.info("设置默认地址: addressId={}", id);
     }

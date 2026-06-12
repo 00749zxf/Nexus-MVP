@@ -22,6 +22,10 @@ public interface ProductMapper {
      */
     int updateById(Product product);
 
+    int decreaseStock(@Param("id") Long id, @Param("quantity") Integer quantity);
+
+    int increaseStock(@Param("id") Long id, @Param("quantity") Integer quantity);
+
     /**
      * 根据ID删除商品
      */

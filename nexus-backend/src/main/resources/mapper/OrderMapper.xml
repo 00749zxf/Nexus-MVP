@@ -36,6 +36,14 @@
         WHERE id = #{id}
     </update>
 
+    <update id="updateStatusIfCurrent">
+        UPDATE oms_order
+        SET status = #{newStatus}, update_time = NOW()
+        WHERE id = #{id}
+          AND member_id = #{memberId}
+          AND status = #{currentStatus}
+    </update>
+
     <delete id="deleteById" parameterType="java.lang.Long">
         DELETE FROM oms_order WHERE id = #{id}
     </delete>

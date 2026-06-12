@@ -51,6 +51,8 @@ public interface AddressMapper {
      */
     void setDefaultById(Long id);
 
+    int setOnlyDefaultByMemberId(@Param("memberId") Long memberId, @Param("id") Long id);
+
     /**
      * 统计会员地址数量
      */

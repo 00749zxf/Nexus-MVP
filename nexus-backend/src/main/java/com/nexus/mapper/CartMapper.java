@@ -17,6 +17,13 @@ public interface CartMapper {
      */
     int insert(Cart cart);
 
+    int insertIfStockAvailable(Cart cart);
+
+    int incrementQuantityIfStockAvailable(@Param("memberId") Long memberId,
+                                          @Param("productId") Long productId,
+                                          @Param("quantity") Integer quantity,
+                                          @Param("selected") Boolean selected);
+
     /**
      * 根据ID更新购物车项
      */

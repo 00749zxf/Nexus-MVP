@@ -107,9 +107,10 @@ public class OrderServiceImpl implements OrderService {
 
         // 减库存
         for (Cart cart : selectedItems) {
-            Product product = productMapper.selectById(cart.getProductId());
-            product.setStock(product.getStock() - cart.getQuantity());
-            productMapper.updateById(product);
+            int updated = productMapper.decreaseStock(cart.getProductId(), cart.getQuantity());
+            if (updated <= 0) {
+                throw new BusinessException("商品库存不足");
+            }
         }
 
         // 清空已购买的购物车项
@@ -167,8 +168,10 @@ public class OrderServiceImpl implements OrderService {
         orderItemMapper.insert(orderItem);
 
         // 减库存
-        product.setStock(product.getStock() - orderDTO.getQuantity());
-        productMapper.updateById(product);
+        int updated = productMapper.decreaseStock(product.getId(), orderDTO.getQuantity());
+        if (updated <= 0) {
+            throw new BusinessException("商品库存不足");
+        }
 
         log.info("直接购买创建订单成功: orderSn={}, memberId={}, productId={}",
                 order.getOrderSn(), memberId, orderDTO.getProductId());
@@ -232,13 +235,11 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException("无权操作此订单");
         }
 
-        if (order.getStatus() != STATUS_PENDING) {
+        int updated = orderMapper.updateStatusIfCurrent(orderId, memberId, STATUS_PENDING, STATUS_PAID);
+        if (updated <= 0) {
             throw new BusinessException("订单状态不正确，无法支付");
         }
-
         order.setStatus(STATUS_PAID);
-        order.setUpdateTime(new Date());
-        orderMapper.updateById(order);
 
         log.info("订单支付成功: orderId={}, orderSn={}", orderId, order.getOrderSn());
 
@@ -260,7 +261,8 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException("无权操作此订单");
         }
 
-        if (order.getStatus() != STATUS_PENDING) {
+        int updated = orderMapper.updateStatusIfCurrent(orderId, memberId, STATUS_PENDING, STATUS_CANCELLED);
+        if (updated <= 0) {
             throw new BusinessException("订单状态不正确，无法取消");
         }
 
@@ -269,14 +271,11 @@ public class OrderServiceImpl implements OrderService {
         for (OrderItem item : orderItems) {
             Product product = productMapper.selectById(item.getProductId());
             if (product != null) {
-                product.setStock(product.getStock() + item.getQuantity());
-                productMapper.updateById(product);
+                productMapper.increaseStock(item.getProductId(), item.getQuantity());
             }
         }
 
         order.setStatus(STATUS_CANCELLED);
-        order.setUpdateTime(new Date());
-        orderMapper.updateById(order);
 
         log.info("订单取消成功: orderId={}, orderSn={}", orderId, order.getOrderSn());
 
@@ -297,13 +296,11 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException("无权操作此订单");
         }
 
-        if (order.getStatus() != STATUS_SHIPPED) {
+        int updated = orderMapper.updateStatusIfCurrent(orderId, memberId, STATUS_SHIPPED, STATUS_COMPLETED);
+        if (updated <= 0) {
             throw new BusinessException("订单状态不正确，无法确认收货");
         }
-
         order.setStatus(STATUS_COMPLETED);
-        order.setUpdateTime(new Date());
-        orderMapper.updateById(order);
 
         log.info("订单确认收货成功: orderId={}, orderSn={}", orderId, order.getOrderSn());
 

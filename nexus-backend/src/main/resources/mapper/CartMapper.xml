@@ -21,6 +21,27 @@
         VALUES (#{memberId}, #{productId}, #{quantity}, #{selected})
     </insert>
 
+    <insert id="insertIfStockAvailable" parameterType="com.nexus.model.entity.Cart" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO oms_cart (member_id, product_id, quantity, selected)
+        SELECT #{memberId}, #{productId}, #{quantity}, #{selected}
+        FROM pms_product
+        WHERE id = #{productId}
+          AND status = 1
+          AND stock &gt;= #{quantity}
+    </insert>
+
+    <update id="incrementQuantityIfStockAvailable">
+        UPDATE oms_cart c
+        JOIN pms_product p ON p.id = c.product_id
+        SET c.quantity = c.quantity + #{quantity},
+            c.selected = #{selected},
+            c.update_time = NOW()
+        WHERE c.member_id = #{memberId}
+          AND c.product_id = #{productId}
+          AND p.status = 1
+          AND p.stock &gt;= c.quantity + #{quantity}
+    </update>
+
     <update id="updateById" parameterType="com.nexus.model.entity.Cart">
         UPDATE oms_cart
         <set>

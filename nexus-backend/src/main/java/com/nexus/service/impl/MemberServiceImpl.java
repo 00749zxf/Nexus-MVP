@@ -4,6 +4,7 @@ import com.nexus.common.BusinessException;
 import com.nexus.mapper.MemberMapper;
 import com.nexus.model.entity.Member;
 import com.nexus.model.dto.MemberDTO;
+import com.nexus.model.dto.MemberUpdateDTO;
 import com.nexus.model.vo.MemberVO;
 import com.nexus.service.MemberService;
 import com.nexus.security.JwtUtil;
@@ -75,7 +76,6 @@ public class MemberServiceImpl implements MemberService {
         // 根据用户名查询用户
         log.debug("尝试登录: username={}", username);
         Member member = memberMapper.selectByUsername(username);
-        log.debug("查询结果: member={}", member);
         if (member == null) {
             throw new BusinessException("用户名或密码错误");
         }
@@ -86,9 +86,7 @@ public class MemberServiceImpl implements MemberService {
         }
 
         // 验证密码
-        log.debug("密码验证: username={}, storedHash={}, passwordLength={}", username, member.getPassword(), password != null ? password.length() : 0);
         boolean matches = passwordEncoder.matches(password, member.getPassword());
-        log.debug("密码匹配结果: {}", matches);
         if (!matches) {
             throw new BusinessException("用户名或密码错误");
         }
@@ -137,6 +135,12 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    public MemberVO getMemberByIdForCurrentUser(Long id) {
+        ensureCurrentMember(id);
+        return getMemberById(id);
+    }
+
+    @Override
     @Transactional
     public MemberVO updateMember(Long id, MemberDTO memberDTO) {
         Member member = memberMapper.selectById(id);
@@ -178,11 +182,6 @@ public class MemberServiceImpl implements MemberService {
             member.setPassword(passwordEncoder.encode(memberDTO.getPassword()));
         }
 
-        // 更新状态（如果有）
-        if (memberDTO.getStatus() != null) {
-            member.setStatus(memberDTO.getStatus());
-        }
-
         member.setUpdateTime(new Date());
         int result = memberMapper.updateById(member);
         if (result <= 0) {
@@ -192,6 +191,58 @@ public class MemberServiceImpl implements MemberService {
         log.info("用户信息更新成功: id={}", id);
 
         // 返回更新后的用户信息
+        return getMemberById(id);
+    }
+
+    @Override
+    @Transactional
+    public MemberVO updateCurrentMember(Long id, MemberUpdateDTO memberDTO) {
+        ensureCurrentMember(id);
+        return updateMember(id, memberDTO);
+    }
+
+    private MemberVO updateMember(Long id, MemberUpdateDTO memberDTO) {
+        Member member = memberMapper.selectById(id);
+        if (member == null) {
+            throw new BusinessException("用户不存在");
+        }
+
+        if (memberDTO.getUsername() != null && !member.getUsername().equals(memberDTO.getUsername())) {
+            if (isUsernameExists(memberDTO.getUsername())) {
+                throw new BusinessException("用户名已存在");
+            }
+            member.setUsername(memberDTO.getUsername());
+        }
+
+        if (memberDTO.getPhone() != null && !memberDTO.getPhone().equals(member.getPhone())) {
+            if (isPhoneExists(memberDTO.getPhone())) {
+                throw new BusinessException("手机号已存在");
+            }
+            member.setPhone(memberDTO.getPhone());
+        }
+
+        if (memberDTO.getEmail() != null && !memberDTO.getEmail().equals(member.getEmail())) {
+            if (isEmailExists(memberDTO.getEmail())) {
+                throw new BusinessException("邮箱已存在");
+            }
+            member.setEmail(memberDTO.getEmail());
+        }
+
+        if (memberDTO.getAvatar() != null) {
+            member.setAvatar(memberDTO.getAvatar());
+        }
+
+        if (memberDTO.getPassword() != null && !memberDTO.getPassword().isEmpty()) {
+            member.setPassword(passwordEncoder.encode(memberDTO.getPassword()));
+        }
+
+        member.setUpdateTime(new Date());
+        int result = memberMapper.updateById(member);
+        if (result <= 0) {
+            throw new BusinessException("更新用户信息失败");
+        }
+
+        log.info("用户信息更新成功: id={}", id);
         return getMemberById(id);
     }
 
@@ -209,6 +260,13 @@ public class MemberServiceImpl implements MemberService {
         }
 
         log.info("用户删除成功: id={}", id);
+    }
+
+    @Override
+    @Transactional
+    public void deleteCurrentMember(Long id) {
+        ensureCurrentMember(id);
+        deleteMember(id);
     }
 
     @Override
@@ -249,6 +307,22 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public boolean isEmailExists(String email) {
         return memberMapper.selectByEmail(email) != null;
+    }
+
+    private void ensureCurrentMember(Long id) {
+        String username = getCurrentUsername();
+        if (username == null) {
+            throw new BusinessException("用户未登录");
+        }
+
+        Member current = memberMapper.selectByUsername(username);
+        if (current == null) {
+            throw new BusinessException("用户不存在");
+        }
+
+        if (!current.getId().equals(id)) {
+            throw new BusinessException(403, "无权访问该用户");
+        }
     }
 
     /**

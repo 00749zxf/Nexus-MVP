@@ -13,6 +13,7 @@ import com.nexus.service.CartService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -61,33 +62,46 @@ public class CartServiceImpl implements CartService {
             throw new BusinessException("商品库存不足");
         }
 
-        // 检查是否已存在购物车项
+        Boolean selected = cartDTO.getSelected() != null ? cartDTO.getSelected() : true;
         Cart existingCart = cartMapper.selectByMemberIdAndProductId(memberId, productId);
         if (existingCart != null) {
-            // 更新数量
-            existingCart.setQuantity(existingCart.getQuantity() + cartDTO.getQuantity());
-            // 检查库存
-            if (product.getStock() < existingCart.getQuantity()) {
+            return incrementCartQuantity(memberId, productId, cartDTO.getQuantity(), selected);
+        }
+
+        Cart cart = new Cart();
+        cart.setMemberId(memberId);
+        cart.setProductId(productId);
+        cart.setQuantity(cartDTO.getQuantity());
+        cart.setSelected(selected);
+        cart.setCreateTime(new Date());
+        cart.setUpdateTime(new Date());
+
+        try {
+            int inserted = cartMapper.insertIfStockAvailable(cart);
+            if (inserted <= 0) {
                 throw new BusinessException("商品库存不足");
             }
-            existingCart.setUpdateTime(new Date());
-            cartMapper.updateById(existingCart);
-            return existingCart.getId();
-        } else {
-            // 新增购物车项
-            Cart cart = new Cart();
-            cart.setMemberId(memberId);
-            cart.setProductId(productId);
-            cart.setQuantity(cartDTO.getQuantity());
-            cart.setSelected(cartDTO.getSelected() != null ? cartDTO.getSelected() : true);
-            cart.setCreateTime(new Date());
-            cart.setUpdateTime(new Date());
-
-            cartMapper.insert(cart);
             log.info("添加商品到购物车: memberId={}, productId={}, quantity={}",
                     memberId, productId, cartDTO.getQuantity());
             return cart.getId();
+        } catch (DuplicateKeyException e) {
+            return incrementCartQuantity(memberId, productId, cartDTO.getQuantity(), selected);
         }
+    }
+
+    private Long incrementCartQuantity(Long memberId, Long productId, Integer quantity, Boolean selected) {
+        int updated = cartMapper.incrementQuantityIfStockAvailable(memberId, productId, quantity, selected);
+        if (updated <= 0) {
+            throw new BusinessException("商品库存不足");
+        }
+
+        Cart savedCart = cartMapper.selectByMemberIdAndProductId(memberId, productId);
+        if (savedCart == null) {
+            throw new BusinessException("购物车项不存在");
+        }
+
+        log.info("更新购物车商品数量: memberId={}, productId={}, quantity={}", memberId, productId, quantity);
+        return savedCart.getId();
     }
 
     @Override

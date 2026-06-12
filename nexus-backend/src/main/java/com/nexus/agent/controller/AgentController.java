@@ -1,6 +1,7 @@
 package com.nexus.agent.controller;
 
 import com.nexus.agent.core.*;
+import com.nexus.agent.protection.AgentConcurrencyGuard;
 import com.nexus.common.ApiResult;
 import com.nexus.common.BusinessException;
 import com.nexus.agent.tools.ToolRegistry;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +29,7 @@ public class AgentController {
 
     private final AgentEngine agentEngine;
     private final ToolRegistry toolRegistry;
+    private final AgentConcurrencyGuard agentConcurrencyGuard;
 
     @PostMapping("/chat")
     @Operation(summary = "Agent对话", description = "与智能Agent进行对话")
@@ -60,8 +63,18 @@ public class AgentController {
             }
         }
 
-        AgentResponse response = agentEngine.execute(request);
+        AgentResponse response = agentConcurrencyGuard.execute(
+                request,
+                buildCallerKey(request),
+                () -> agentEngine.execute(request)
+        );
         return Result.success(response);
+    }
+
+    @GetMapping("/protection/status")
+    @Operation(summary = "Agent保护状态", description = "查看Agent并发保护、限流和熔断状态")
+    public Result<Map<String, Object>> getProtectionStatus() {
+        return Result.success(agentConcurrencyGuard.snapshot());
     }
 
     @GetMapping("/types")
@@ -85,5 +98,25 @@ public class AgentController {
     public static class AgentTypeInfo {
         private String name;
         private String description;
+    }
+
+    private String buildCallerKey(AgentRequest request) {
+        AgentContext context = request.getContext();
+        if (context != null) {
+            if (context.getMemberId() != null) {
+                return "member:" + context.getMemberId();
+            }
+            if (context.getUsername() != null && !context.getUsername().isBlank()) {
+                return "user:" + context.getUsername();
+            }
+        }
+        if (request.getSessionId() != null && !request.getSessionId().isBlank()) {
+            return "session:" + request.getSessionId();
+        }
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+            return "auth:" + auth.getName();
+        }
+        return "anonymous";
     }
 }

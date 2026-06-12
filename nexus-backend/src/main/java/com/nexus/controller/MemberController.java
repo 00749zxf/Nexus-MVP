@@ -1,7 +1,9 @@
 package com.nexus.controller;
 
 import com.nexus.common.Result;
+import com.nexus.model.dto.LoginDTO;
 import com.nexus.model.dto.MemberDTO;
+import com.nexus.model.dto.MemberUpdateDTO;
 import com.nexus.model.vo.MemberVO;
 import com.nexus.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * 用户控制器
@@ -34,9 +37,8 @@ public class MemberController {
 
     @Operation(summary = "用户登录")
     @PostMapping("/login")
-    public Result<String> login(@RequestParam String username,
-                                @RequestParam String password) {
-        String token = memberService.login(username, password);
+    public Result<String> login(@Valid @RequestBody LoginDTO loginDTO) {
+        String token = memberService.login(loginDTO.getUsername(), loginDTO.getPassword());
         return Result.success("登录成功", token);
     }
 
@@ -50,27 +52,28 @@ public class MemberController {
     @Operation(summary = "根据ID获取用户信息")
     @GetMapping("/{id}")
     public Result<MemberVO> getMemberById(@PathVariable Long id) {
-        MemberVO memberVO = memberService.getMemberById(id);
+        MemberVO memberVO = memberService.getMemberByIdForCurrentUser(id);
         return Result.success(memberVO);
     }
 
     @Operation(summary = "更新用户信息")
     @PutMapping("/{id}")
     public Result<MemberVO> updateMember(@PathVariable Long id,
-                                     @Valid @RequestBody MemberDTO memberDTO) {
-        MemberVO updatedMember = memberService.updateMember(id, memberDTO);
+                                     @Valid @RequestBody MemberUpdateDTO memberDTO) {
+        MemberVO updatedMember = memberService.updateCurrentMember(id, memberDTO);
         return Result.success("更新成功", updatedMember);
     }
 
     @Operation(summary = "删除用户")
     @DeleteMapping("/{id}")
     public Result<Void> deleteMember(@PathVariable Long id) {
-        memberService.deleteMember(id);
+        memberService.deleteCurrentMember(id);
         return Result.success("删除成功", null);
     }
 
     @Operation(summary = "获取所有用户列表")
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<List<MemberVO>> listAllMembers() {
         List<MemberVO> members = memberService.listAllMembers();
         return Result.success(members);
@@ -78,6 +81,7 @@ public class MemberController {
 
     @Operation(summary = "分页查询用户")
     @GetMapping("/page")
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<List<MemberVO>> listMembersByPage(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
